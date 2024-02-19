@@ -37,30 +37,61 @@ function App() {
   }, []);
 
   return (
-    <>
-      <h1>City Navigation Tool</h1>
+    <div className='flex flex-col h-screen'>
+      <header className='w-full bg-blue-600 text-white py-4 shadow-md z-10'>
+        <h1 className='text-4xl font-bold text-center'>City Navigation Tool</h1>
+      </header>
+      <div className='flex-grow flex'>
+        <div className='w-full md:w-1/4 xl:w-1/5 p-4 bg-gray-100 overflow-auto'>
+          <div className='mb-4'>
+            <label
+              htmlFor='start-point'
+              className='block text-sm font-medium text-gray-700'>
+              Select Start Point
+            </label>
+            <select
+              id='start-point'
+              className='mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+              onChange={(e) => setStart(e.target.value)}>
+              <option value=''>Select Start Point</option>
+              {locations.map((location, idx) => (
+                <option key={idx} value={location.name}>
+                  {location.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <select onChange={(e) => setStart(e.target.value)}>
-        <option value=''>Select Start Point</option>
-        {locations.map((location, idx) => (
-          <option key={idx} value={location.name}>
-            {location.name}
-          </option>
-        ))}
-      </select>
+          <div className='mb-4'>
+            <label
+              htmlFor='end-point'
+              className='block text-sm font-medium text-gray-700'>
+              Select End Point
+            </label>
+            <select
+              id='end-point'
+              className='mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+              onChange={(e) => setEnd(e.target.value)}>
+              <option value=''>Select End Point</option>
+              {locations.map((location, idx) => (
+                <option key={idx} value={location.name}>
+                  {location.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <select onChange={(e) => setEnd(e.target.value)}>
-        <option value=''>Select End Point</option>
-        {locations.map((location, idx) => (
-          <option key={idx} value={location.name}>
-            {location.name}
-          </option>
-        ))}
-      </select>
-      <button onClick={handleRouteCalculation}>Calculate Route</button>
-
-      {position && <MapComponent position={position} path={path} />}
-    </>
+          <button
+            className='w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+            onClick={handleRouteCalculation}>
+            Calculate Route
+          </button>
+        </div>
+        <div className='w-full md:w-3/4 xl:w-4/5 h-full'>
+          {position && <MapComponent position={position} path={path} />}
+        </div>
+      </div>
+    </div>
   );
 }
 
