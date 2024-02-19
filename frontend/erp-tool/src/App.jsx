@@ -1,12 +1,23 @@
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+import MapComponent from './Components/MapComponent';
 import { useState, useEffect } from 'react';
+import { locations, list } from './data';
 
 function App() {
   const [position, setPosition] = useState(null);
+  const [start, setStart] = useState(null);
+  const [end, setEnd] = useState(null);
+  const [path, setPath] = useState([]);
+
+  function handleRouteCalculation() {
+    setPath([
+      { lat: 33.8704, lon: -117.9242 }, //source node
+      { lat: 33.881683, lon: -118.117012 }, //inteermediate
+      { lat: 33.77005, lon: -118.193741 }, //destination
+    ]);
+  }
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -28,14 +39,27 @@ function App() {
   return (
     <>
       <h1>City Navigation Tool</h1>
-      {position && (
-        <MapContainer center={position} zoom={13} style={{ height: '100vh' }}>
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-          />
-        </MapContainer>
-      )}
+
+      <select onChange={(e) => setStart(e.target.value)}>
+        <option value=''>Select Start Point</option>
+        {locations.map((location, idx) => (
+          <option key={idx} value={location.name}>
+            {location.name}
+          </option>
+        ))}
+      </select>
+
+      <select onChange={(e) => setEnd(e.target.value)}>
+        <option value=''>Select End Point</option>
+        {locations.map((location, idx) => (
+          <option key={idx} value={location.name}>
+            {location.name}
+          </option>
+        ))}
+      </select>
+      <button onClick={handleRouteCalculation}>Calculate Route</button>
+
+      {position && <MapComponent position={position} path={path} />}
     </>
   );
 }
