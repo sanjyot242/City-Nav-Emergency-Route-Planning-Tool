@@ -46,7 +46,7 @@ function RouteHandler({ from, to, isBlocked }) {
         map.removeControl(routingControl);
       }
     };
-  }, [from, to, map, isBlocked]); // Add all dependencies here
+  }, [from, to, map]); // Add all dependencies here
 
   return null;
 }

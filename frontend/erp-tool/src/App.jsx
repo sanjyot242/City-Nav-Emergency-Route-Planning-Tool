@@ -9,8 +9,14 @@ import CustomInput from './Components/CustomInput';
 
 function App() {
   const [position, setPosition] = useState(null);
+  const [blockages, setBlockages] = useState([]);
+
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
+
+  const [blockageStart, setblockageStart] = useState(null);
+  const [blockageEnd, setblockageEnd] = useState(null);
+
   const [path, setPath] = useState([]);
 
   function handleRouteCalculation() {
@@ -39,6 +45,25 @@ function App() {
     //   { lat: 33.881683, lon: -118.117012 }, //inteermediate
     //   { lat: 33.77005, lon: -118.193741 }, //destination
     // ]);
+  }
+
+  function handleAddBlockage() {
+    const startLocation = locations.find(
+      (location) => location.name === blockageStart
+    );
+    const endLocation = locations.find(
+      (location) => location.name === blockageEnd
+    );
+
+    if (startLocation && endLocation) {
+      setBlockages([
+        ...blockages,
+        {
+          from: { lat: startLocation.lat, lon: startLocation.lon },
+          to: { lat: endLocation.lat, lon: endLocation.lon },
+        },
+      ]);
+    }
   }
 
   useEffect(() => {
@@ -72,14 +97,20 @@ function App() {
             buttonTitle={'Calculate Route '}
           />
           <CustomInput
-            setStart={setStart}
-            setEnd={setEnd}
-            onClick={handleRouteCalculation}
+            setStart={setblockageStart}
+            setEnd={setblockageEnd}
+            onClick={handleAddBlockage}
             buttonTitle={'Add Blockages '}
           />
         </div>
         <div className='w-full md:w-3/4 xl:w-4/5 h-full'>
-          {position && <MapComponent position={position} path={path} />}
+          {position && (
+            <MapComponent
+              position={position}
+              path={path}
+              blockedPaths={blockages}
+            />
+          )}
         </div>
       </div>
     </div>
