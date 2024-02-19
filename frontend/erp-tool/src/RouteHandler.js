@@ -15,6 +15,11 @@ function RouteHandler({ from, to, isBlocked }) {
     if (from && to) {
       const lineColor = isBlocked ? 'red' : 'blue';
 
+      if (routingControl) {
+        map.removeControl(routingControl);
+        routingControl = null;
+      }
+
       // Creating and adding the routing control to the map
       routingControl = L.Routing.control({
         waypoints: [L.latLng(from[0], from[1]), L.latLng(to[0], to[1])],
@@ -35,13 +40,13 @@ function RouteHandler({ from, to, isBlocked }) {
     }
 
     // Cleanup function to remove the routing control from the map when the component unmounts or the 'from' and 'to' props change
-    return () =>
-      map.eachLayer((layer) => {
-        if (layer instanceof L.Routing.Control) {
-          map.removeLayer(layer);
-        }
-      });
-  }, [map, from, to]); // Dependencies of the useEffect hook
+    return () => {
+      // Check if routingControl exists and remove it
+      if (routingControl && map) {
+        map.removeControl(routingControl);
+      }
+    };
+  }, [from, to, map]); // Add all dependencies here
 
   return null;
 }

@@ -18,7 +18,8 @@ const customMarkerIcon = new L.Icon({
   popupAnchor: [0, -32], // Popup anchor point
 });
 
-function MapComponent({ position, path }) {
+function MapComponent({ position, path, blockedPaths }) {
+  console.log(blockedPaths);
   return (
     <MapContainer
       center={position}
@@ -35,6 +36,15 @@ function MapComponent({ position, path }) {
           icon={customMarkerIcon}>
           <Popup>{location.name}</Popup>
         </Marker>
+      ))}
+
+      {blockedPaths?.map((blockedPath, index) => (
+        <RouteHandler
+          key={index}
+          from={[blockedPath.from.lat, blockedPath.from.lon]}
+          to={[blockedPath.to.lat, blockedPath.to.lon]}
+          isBlocked={true} // Pass true to set the color to red
+        />
       ))}
 
       {path.length > 1 && (
