@@ -47,6 +47,10 @@ function App() {
     // ]);
   }
 
+  function clearAllBlockAges() {
+    setBlockages([]);
+  }
+
   function handleAddBlockage() {
     const startLocation = locations.find(
       (location) => location.name === blockageStart
@@ -94,14 +98,23 @@ function App() {
             setStart={setStart}
             setEnd={setEnd}
             onClick={handleRouteCalculation}
-            buttonTitle={'Calculate Route '}
-          />
+            buttonTitle={'Calculate Route '}>
+            Plan Your Journey
+          </CustomInput>
           <CustomInput
             setStart={setblockageStart}
             setEnd={setblockageEnd}
             onClick={handleAddBlockage}
-            buttonTitle={'Add Blockages '}
-          />
+            buttonTitle={'Add Blockages '}>
+            Add Blockages
+          </CustomInput>
+          <div className='py-4 px-2'>
+            <button
+              className='w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded'
+              onClick={clearAllBlockAges}>
+              Clear All Blockages
+            </button>
+          </div>
         </div>
         <div className='w-full md:w-3/4 xl:w-4/5 h-full'>
           {position && (
