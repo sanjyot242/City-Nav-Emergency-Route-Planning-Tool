@@ -1,12 +1,10 @@
 import { locations, list } from '../data';
 
-function CustomInput({ setStart, setEnd, onClick, buttonTitle }) {
+function CustomInput({ setStart, setEnd, onClick, buttonTitle, children }) {
   return (
     // <div className='w-full md:w-1/4 xl:w-1/5 p-4 bg-gray-100 overflow-auto'>
-    <>
-      <h2 className='text-center  text-xl  font-bold my-2'>
-        Plan Your Journey
-      </h2>
+    <div className='py-4 px-2'>
+      <h2 className='text-center  text-xl  font-bold my-2'>{children}</h2>
       <div className='mb-4'>
         <label
           htmlFor='start-point'
@@ -50,7 +48,7 @@ function CustomInput({ setStart, setEnd, onClick, buttonTitle }) {
         onClick={onClick}>
         {buttonTitle}
       </button>
-    </>
+    </div>
     // </div>
   );
 }
