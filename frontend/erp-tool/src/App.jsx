@@ -14,37 +14,39 @@ function App() {
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
 
-  const [blockageStart, setblockageStart] = useState(null);
-  const [blockageEnd, setblockageEnd] = useState(null);
+  const [blockageStart, setBlockageStart] = useState(null);
+  const [blockageEnd, setBlockageEnd] = useState(null);
 
   const [path, setPath] = useState([]);
 
-  function handleRouteCalculation() {
-    {
-      // Find the start location in the locations array
-      const startLocation = locations.find(
-        (location) => location.name === start
-      );
-      // Find the end location in the locations array
-      const endLocation = locations.find((location) => location.name === end);
+  const [initialDistanceMatrix, setInitialDistanceMatrix] = useState([]);
+  const [distanceMatrixWithBlockages, setDistanceMatrixWithBlockages] = useState([]);
 
-      // If both start and end locations are found, set the path
-      if (startLocation && endLocation) {
-        setPath([
-          { lat: startLocation.lat, lon: startLocation.lon }, // Start node
-          { lat: 33.80497, lon: -118.0718 },
-          { lat: endLocation.lat, lon: endLocation.lon }, // End node
-        ]);
-      } else {
-        // Handle the case where the locations are not found
-        console.error('Start or end location not found');
-      }
+  function handleRouteCalculation() {
+    const matrixToUse =
+      distanceMatrixWithBlockages && distanceMatrixWithBlockages.length > 0
+        ? distanceMatrixWithBlockages
+        : initialDistanceMatrix;
+
+    const { dist, next } = floydWarshall(matrixToUse);
+
+    const startIndex = locations.findIndex((loc) => loc.name === start);
+    const endIndex = locations.findIndex((loc) => loc.name === end);
+
+    if (startIndex !== -1 && endIndex !== -1) {
+      const pathIndices = constructPath(next, startIndex, endIndex);
+      const pathCoordinates = pathIndices.map((index) => ({
+        lat: locations[index].lat,
+        lon: locations[index].lon,
+      }));
+
+      setPath(pathCoordinates);
+      console.log(
+        `Shortest distance from ${start} to ${end} is ${dist[startIndex][endIndex]} km`
+      );
+    } else {
+      console.error('Start or end location not found');
     }
-    // setPath([
-    //   { lat: 33.8704, lon: -117.9242 }, //source node
-    //   { lat: 33.881683, lon: -118.117012 }, //inteermediate
-    //   { lat: 33.77005, lon: -118.193741 }, //destination
-    // ]);
   }
 
   function clearAllBlockAges() {
@@ -63,12 +65,96 @@ function App() {
       setBlockages([
         ...blockages,
         {
-          from: { lat: startLocation.lat, lon: startLocation.lon },
-          to: { lat: endLocation.lat, lon: endLocation.lon },
+          from: { name: startLocation.name, lat: startLocation.lat, lon: startLocation.lon },
+          to: { name: endLocation.name, lat: endLocation.lat, lon: endLocation.lon },
         },
       ]);
     }
   }
+
+  const floydWarshall = (matrix) => {
+    const numVertices = matrix.length;
+    let next = Array.from({ length: numVertices }, () =>
+      Array.from({ length: numVertices }, () => null)
+    );
+
+    let dist = matrix.map((row, i) =>
+      row.map((value, j) => {
+        if (value !== 999 && i !== j) {
+          next[i][j] = j;
+        }
+        return value;
+      })
+    );
+
+    for (let k = 0; k < numVertices; k++) {
+      for (let i = 0; i < numVertices; i++) {
+        for (let j = 0; j < numVertices; j++) {
+          if (dist[i][k] + dist[k][j] < dist[i][j]) {
+            dist[i][j] = dist[i][k] + dist[k][j];
+            next[i][j] = next[i][k];
+          }
+        }
+      }
+    }
+
+    return { dist, next };
+  };
+
+  const constructPath = (next, start, end) => {
+    if (next[start][end] === null) return [];
+    let path = [start];
+    while (start !== end) {
+      start = next[start][end];
+      path.push(start);
+    }
+    return path;
+  };
+
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const earthRadius = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadius * c;
+  };
+
+  const generateInitialDistanceMatrix = () => {
+    let matrix = locations.map((from) =>
+      locations.map((to) =>
+        from === to ? 0 : calculateDistance(from.lat, from.lon, to.lat, to.lon)
+      )
+    );
+    console.log("Initial")
+    console.log(matrix)
+    setInitialDistanceMatrix(matrix);
+    setDistanceMatrixWithBlockages(matrix);
+  };
+
+  const applyBlockagesToDistanceMatrix = () => {
+    let matrix = initialDistanceMatrix.map(row => [...row]);
+    for (let i = 0; i < blockages.length; i++) {
+      const fromIndex = locations.findIndex(loc => loc.name === blockages[i].from.name);
+      const toIndex = locations.findIndex(loc => loc.name === blockages[i].to.name);
+      if (fromIndex !== -1 && toIndex !== -1) {
+        matrix[fromIndex][toIndex] = 999;
+      }
+    }
+    console.log("Blockage")
+    console.log(matrix)
+    setDistanceMatrixWithBlockages(matrix); 
+  };
+
+  useEffect(() => {
+    generateInitialDistanceMatrix();
+  }, []);
+
+  useEffect(() => {
+    applyBlockagesToDistanceMatrix();
+  }, [blockages]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -102,8 +188,8 @@ function App() {
             Plan Your Journey
           </CustomInput>
           <CustomInput
-            setStart={setblockageStart}
-            setEnd={setblockageEnd}
+            setStart={setBlockageStart}
+            setEnd={setBlockageEnd}
             onClick={handleAddBlockage}
             buttonTitle={'Add Blockages '}>
             Add Blockages
