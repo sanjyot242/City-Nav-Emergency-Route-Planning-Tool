@@ -28,6 +28,7 @@ function RouteHandler({ from, to, isBlocked }) {
         router: L.Routing.mapbox(
           'pk.eyJ1Ijoic2FuanlvdDI0MiIsImEiOiJjbHNzNzM2NXYwYnZvMnJxbjQzZHZibjFlIn0.aU9D-7-91z6UqtD6dQm9CQ'
         ),
+        //showAlternatives: true,
         createMarker: () => {
           return null;
         },
@@ -35,6 +36,13 @@ function RouteHandler({ from, to, isBlocked }) {
           styles: [{ color: lineColor, opacity: 1, weight: 5 }],
         },
       }).addTo(map);
+
+      // Event listener for routesfound event
+      const onRouteFound = (e) => {
+        console.log(e);
+      };
+
+      routingControl.on('routesfound', onRouteFound);
 
       routingControl._container.style.display = 'none';
     }

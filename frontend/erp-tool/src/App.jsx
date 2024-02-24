@@ -20,7 +20,8 @@ function App() {
   const [path, setPath] = useState([]);
 
   const [initialDistanceMatrix, setInitialDistanceMatrix] = useState([]);
-  const [distanceMatrixWithBlockages, setDistanceMatrixWithBlockages] = useState([]);
+  const [distanceMatrixWithBlockages, setDistanceMatrixWithBlockages] =
+    useState([]);
 
   function handleRouteCalculation() {
     const matrixToUse =
@@ -35,11 +36,13 @@ function App() {
 
     if (startIndex !== -1 && endIndex !== -1) {
       const pathIndices = constructPath(next, startIndex, endIndex);
+      console.log(pathIndices);
       const pathCoordinates = pathIndices.map((index) => ({
         lat: locations[index].lat,
         lon: locations[index].lon,
       }));
 
+      console.log(pathCoordinates);
       setPath(pathCoordinates);
       console.log(
         `Shortest distance from ${start} to ${end} is ${dist[startIndex][endIndex]} km`
@@ -65,8 +68,16 @@ function App() {
       setBlockages([
         ...blockages,
         {
-          from: { name: startLocation.name, lat: startLocation.lat, lon: startLocation.lon },
-          to: { name: endLocation.name, lat: endLocation.lat, lon: endLocation.lon },
+          from: {
+            name: startLocation.name,
+            lat: startLocation.lat,
+            lon: startLocation.lon,
+          },
+          to: {
+            name: endLocation.name,
+            lat: endLocation.lat,
+            lon: endLocation.lon,
+          },
         },
       ]);
     }
@@ -113,11 +124,14 @@ function App() {
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const earthRadius = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return earthRadius * c;
   };
@@ -128,24 +142,28 @@ function App() {
         from === to ? 0 : calculateDistance(from.lat, from.lon, to.lat, to.lon)
       )
     );
-    console.log("Initial")
-    console.log(matrix)
+    console.log('Initial');
+    console.log(matrix);
     setInitialDistanceMatrix(matrix);
     setDistanceMatrixWithBlockages(matrix);
   };
 
   const applyBlockagesToDistanceMatrix = () => {
-    let matrix = initialDistanceMatrix.map(row => [...row]);
+    let matrix = initialDistanceMatrix.map((row) => [...row]);
     for (let i = 0; i < blockages.length; i++) {
-      const fromIndex = locations.findIndex(loc => loc.name === blockages[i].from.name);
-      const toIndex = locations.findIndex(loc => loc.name === blockages[i].to.name);
+      const fromIndex = locations.findIndex(
+        (loc) => loc.name === blockages[i].from.name
+      );
+      const toIndex = locations.findIndex(
+        (loc) => loc.name === blockages[i].to.name
+      );
       if (fromIndex !== -1 && toIndex !== -1) {
         matrix[fromIndex][toIndex] = 999;
       }
     }
-    console.log("Blockage")
-    console.log(matrix)
-    setDistanceMatrixWithBlockages(matrix); 
+    console.log('Blockage');
+    console.log(matrix);
+    setDistanceMatrixWithBlockages(matrix);
   };
 
   useEffect(() => {
